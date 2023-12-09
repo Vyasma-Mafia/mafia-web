@@ -243,7 +243,7 @@ public class StatisticsService {
     }
 
     private int countBestTurn(Game game, int sitNumber) {
-        if (game.getBestTurnFrom() == null || game.getBestTurnFrom() != sitNumber - 1) {
+        if (game.getBestTurnFrom() == null || game.getBestTurnFrom() != sitNumber) {
             return 0;
         }
         var res = 0;
