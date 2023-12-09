@@ -1,14 +1,12 @@
 package com.mafia.mafiabackend.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
 import com.mafia.mafiabackend.dto.CommonWinsDtoResponse;
 import com.mafia.mafiabackend.dto.GameDtoResponse;
 import com.mafia.mafiabackend.dto.GameRatingDtoResponse;
@@ -248,7 +246,7 @@ public class StatisticsService {
         }
         var res = 0;
         if (game.getBestTurn1() != null) {
-            res += game.getGameInfos().get(game.getBestTurn1() - 1).getRole().isBlack() ? 1 : 0;
+            res += checkOnBlack(game, game.getBestTurn1());
         }
         if (game.getBestTurn2() != null) {
             res += game.getGameInfos().get(game.getBestTurn2() - 1).getRole().isBlack() ? 1 : 0;
@@ -259,5 +257,10 @@ public class StatisticsService {
         return res;
 
 
+    }
+
+    private static Integer checkOnBlack(Game game, Integer sitNumber) {
+        return game.getGameInfos().stream().filter(it -> Objects.equals(it.getSitNumber(), sitNumber))
+                .findFirst().map(it -> it.getRole().isBlack() ? 1 : 0).orElse(0);
     }
 }
