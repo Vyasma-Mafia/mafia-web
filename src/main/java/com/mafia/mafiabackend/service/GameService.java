@@ -30,7 +30,7 @@ public class GameService {
     public GameInfoDtoResponse getGameInfosByGameId(Long id) {
         List<GameInfo> gameInfos = gameInfoRepository.findAllByGameId(id).stream()
                 .sorted(Comparator.comparing(GameInfo::getAlive).reversed().thenComparing(GameInfo::getSitNumber))
-                .collect(Collectors.toList());
+                .toList();
         if (gameInfos.isEmpty()) {
             return null;
         }
@@ -59,11 +59,34 @@ public class GameService {
                         .playerInfos(gameInfoDtos)
                         .gameFinished(false)
                         .gameId(id)
+                        .canBlackWin(isGameCanFinishedByBlack(game))
+                        .canRedWin(isGameCanFinishedByRed(game))
                         .gameStarted(gameStarted)
                         .build();
             }
         }
         return null;
+    }
+
+    private boolean isGameCanFinishedByRed(Game game) {
+        if (game.getGameInfos().stream().anyMatch(x -> x.getRole() == null)) {
+            return true;
+        }
+        return game.getGameInfos().stream().noneMatch(x -> Role.isBlack(x.getRole()) && x.getAlive());
+    }
+
+    private boolean isGameCanFinishedByBlack(Game game) {
+        List<GameInfo> gameInfos = game.getGameInfos();
+        if (gameInfos.stream().anyMatch(x -> x.getRole() == null)) {
+            return true;
+        }
+        long numberOfAliveBlackPlayers = gameInfos.stream()
+                .filter(x -> Role.isBlack(x.getRole()) && x.getAlive())
+                .count();
+        long numberOfAliveRedPlayers = gameInfos.stream()
+                .filter(x -> !Role.isBlack(x.getRole()) && x.getAlive())
+                .count();
+        return numberOfAliveBlackPlayers >= numberOfAliveRedPlayers;
     }
 
     public List<ActiveGamesDtoResponse> getActiveGames() {
@@ -114,6 +137,20 @@ public class GameService {
         game.setRedWin(gameFinishDtoRequest.getResult() == GameResult.RED_WIN);
         game.setGameFinished(true);
         game.getMonitoringInfo().setUpdatedAt(Instant.now());
+        var bestTurn = gameFinishDtoRequest.getBestTurn();
+        if (bestTurn != null) {
+            game.setBestTurnFrom(bestTurn.getFrom());
+            if (!bestTurn.getTo().isEmpty()) {
+                game.setBestTurn1(bestTurn.getTo().get(0));
+            }
+            if (bestTurn.getTo().size() >= 2) {
+                game.setBestTurn2(bestTurn.getTo().get(1));
+            }
+            if (bestTurn.getTo().size() >= 3) {
+                game.setBestTurn3(bestTurn.getTo().get(2));
+            }
+
+        }
         gameRepository.save(game);
         statisticsService.updateCommonStatistics(game.getRedWin() ? Role.RED : Role.BLACK);
         log.info("Game with id: " + gameFinishDtoRequest.getId() + " has been finished");
@@ -238,9 +275,26 @@ public class GameService {
         if (optionalGame.isPresent()) {
             Game game = optionalGame.get();
             game.setGameStarted(true);
+            if (!validateRoles(game)) {
+                return HttpStatus.BAD_REQUEST;
+            }
             gameRepository.save(game);
             return HttpStatus.OK;
         }
         return HttpStatus.NOT_FOUND;
+    }
+
+    public boolean validateRoles(Game game) {
+        if (game.getGameType() == GameType.CLASSIC && game.getGameInfos().size() == 10) {
+            return checkRoleInGame(game, Role.BLACK, 2)
+                    && checkRoleInGame(game, Role.DON, 1)
+                    && checkRoleInGame(game, Role.SHERIFF, 1)
+                    && checkRoleInGame(game, Role.RED, 6);
+        }
+        return true;
+    }
+
+    private static boolean checkRoleInGame(Game game, Role role, int expectedCount) {
+        return game.getGameInfos().stream().filter(it -> it.getRole() == role).count() == expectedCount;
     }
 }

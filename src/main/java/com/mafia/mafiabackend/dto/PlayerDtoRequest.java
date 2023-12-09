@@ -12,7 +12,7 @@ import javax.validation.constraints.Size;
 public class PlayerDtoRequest {
     @Schema(description = "Имя игрока", example = "Вовчик")
     @NotNull
-    @Size(min = 3, max = 10)
+    @Size(min = 3, max = 20)
     @PlayerNameExists
     private String name;
 }

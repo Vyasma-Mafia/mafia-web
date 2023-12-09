@@ -9,14 +9,14 @@ public enum Role {
     DOCTOR,
     MANIAC;
 
+    public boolean isBlack() {
+        return Role.isBlack(this);
+    }
+
     public static Boolean isBlack(Role role) {
-        switch (role) {
-            case BLACK:
-            case DON:
-            case WHORE:
-                return true;
-            default:
-                return false;
-        }
+        return switch (role) {
+            case BLACK, DON, WHORE -> true;
+            default -> false;
+        };
     }
 }

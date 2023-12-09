@@ -21,6 +21,11 @@ public class GameInfoDtoResponse {
     @Schema(description = "Индикатор, показывающий, закончена ли игра")
     private Boolean gameFinished;
 
+    @Schema(description = "Индикатор, показывающий, могут ли черные выиграть")
+    private Boolean canBlackWin;
+    @Schema(description = "Индикатор, показывающий, могут ли красные выиграть")
+    private Boolean canRedWin;
+
     private Boolean redWin;
 
 }

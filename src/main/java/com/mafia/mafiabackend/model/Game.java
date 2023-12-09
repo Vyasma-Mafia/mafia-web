@@ -30,6 +30,10 @@ public class Game {
     private Boolean gameStarted;
 
     private Integer numberOfPlayers;
+    private Integer bestTurnFrom;
+    private Integer bestTurn1;
+    private Integer bestTurn2;
+    private Integer bestTurn3;
 
     @OneToMany(mappedBy = "game", fetch = FetchType.LAZY)
     @JsonIgnore

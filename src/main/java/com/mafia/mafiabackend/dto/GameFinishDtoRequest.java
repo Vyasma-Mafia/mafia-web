@@ -21,4 +21,7 @@ public class GameFinishDtoRequest {
             "черные: BLACK_WIN, скип игры и удаление из базы: SKIP_AND_DELETE", example = "RED_WIN")
     @NotNull
     private GameResult result;
+
+    @Schema(description = "Лучший ход, сделанный игроком")
+    private BestTurnDto bestTurn;
 }

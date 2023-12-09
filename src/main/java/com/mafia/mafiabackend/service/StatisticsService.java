@@ -1,21 +1,32 @@
 package com.mafia.mafiabackend.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.OptionalDouble;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.Lists;
 import com.mafia.mafiabackend.dto.CommonWinsDtoResponse;
 import com.mafia.mafiabackend.dto.GameDtoResponse;
 import com.mafia.mafiabackend.dto.GameRatingDtoResponse;
+import com.mafia.mafiabackend.dto.SimpleStatisticDto;
 import com.mafia.mafiabackend.dto.StatisticsDtoResponse;
-import com.mafia.mafiabackend.model.*;
+import com.mafia.mafiabackend.model.CommonStatistic;
+import com.mafia.mafiabackend.model.Game;
+import com.mafia.mafiabackend.model.GameInfo;
+import com.mafia.mafiabackend.model.Player;
+import com.mafia.mafiabackend.model.Role;
 import com.mafia.mafiabackend.repository.CommonStatisticsRepository;
 import com.mafia.mafiabackend.repository.GameInfoRepository;
 import com.mafia.mafiabackend.repository.PlayerRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpEntity;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -90,13 +101,14 @@ public class StatisticsService {
     }
 
     public void updateCommonStatistics(Role role) {
+
+        // FIXME
         List<CommonStatistic> commonStatisticList = commonStatisticsRepository.findAll();
         CommonStatistic commonStatistic;
-        if (commonStatisticList.size() != 0){
+        if (!commonStatisticList.isEmpty()) {
             commonStatistic = commonStatisticList.get(0);
-        }
-        else {
-            throw new IndexOutOfBoundsException();
+        } else {
+            commonStatistic = commonStatisticsRepository.save(new CommonStatistic(0L, 0, 0));
         }
         if (!Role.isBlack(role)) {
             commonStatisticsRepository.save(CommonStatistic.builder()
@@ -104,8 +116,7 @@ public class StatisticsService {
                     .totalRedWins(commonStatistic.getTotalRedWins() + 1)
                     .totalGames(commonStatistic.getTotalGames() + 1)
                     .build());
-        }
-        else {
+        } else {
             commonStatisticsRepository.save(CommonStatistic.builder()
                     .id(commonStatistic.getId())
                     .totalRedWins(commonStatistic.getTotalRedWins())
@@ -204,8 +215,7 @@ public class StatisticsService {
                             .playerName(player.getName())
                             .totalWins(totalWins)
                             .totalGames((long) gameInfos.size())
-                            .rating(Double.parseDouble(String.format("%.1f",
-                                    Math.pow(totalWins, 2) / gameInfos.size()).replaceAll(",", ".")))
+                            .rating(Math.pow(totalWins, 2) / gameInfos.size())
                             .build();
                 })
                 .filter(Objects::nonNull)
@@ -214,5 +224,40 @@ public class StatisticsService {
                         .reversed())
                 .limit(10)
                 .collect(Collectors.toList());
+    }
+
+    public List<SimpleStatisticDto> getSimpleStatistic() {
+        List<GameInfo> gameInfos = gameInfoRepository.findAll(Sort.by(Sort.Direction.DESC, "game_id"));
+        return gameInfos.stream()
+                .map(it -> SimpleStatisticDto.builder()
+                        .gameDate(it.getGame().getMonitoringInfo().getUpdatedAt())
+                        .gameId(it.getGameId())
+                        .playerName(it.getPlayer().getName())
+                        .isRed(!it.getRole().isBlack())
+                        .isRedWin(it.getGame().getRedWin())
+                        .bestTurn(countBestTurn(it.getGame(), it.getSitNumber()))
+                        .build()
+                )
+                .limit(1000)
+                .toList();
+    }
+
+    private int countBestTurn(Game game, int sitNumber) {
+        if (game.getBestTurnFrom() == null || game.getBestTurnFrom() != sitNumber - 1) {
+            return 0;
+        }
+        var res = 0;
+        if (game.getBestTurn1() != null) {
+            res += game.getGameInfos().get(game.getBestTurn1() - 1).getRole().isBlack() ? 1 : 0;
+        }
+        if (game.getBestTurn2() != null) {
+            res += game.getGameInfos().get(game.getBestTurn2() - 1).getRole().isBlack() ? 1 : 0;
+        }
+        if (game.getBestTurn3() != null) {
+            res += game.getGameInfos().get(game.getBestTurn3() - 1).getRole().isBlack() ? 1 : 0;
+        }
+        return res;
+
+
     }
 }
