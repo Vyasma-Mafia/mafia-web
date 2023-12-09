@@ -245,21 +245,18 @@ public class StatisticsService {
             return 0;
         }
         var res = 0;
-        if (game.getBestTurn1() != null) {
-            res += checkOnBlack(game, game.getBestTurn1());
-        }
-        if (game.getBestTurn2() != null) {
-            res += game.getGameInfos().get(game.getBestTurn2() - 1).getRole().isBlack() ? 1 : 0;
-        }
-        if (game.getBestTurn3() != null) {
-            res += game.getGameInfos().get(game.getBestTurn3() - 1).getRole().isBlack() ? 1 : 0;
-        }
+        res += checkOnBlack(game, game.getBestTurn1());
+        res += checkOnBlack(game, game.getBestTurn2());
+        res += checkOnBlack(game, game.getBestTurn3());
         return res;
 
 
     }
 
     private static Integer checkOnBlack(Game game, Integer sitNumber) {
+        if (sitNumber == null) {
+            return 0;
+        }
         return game.getGameInfos().stream().filter(it -> Objects.equals(it.getSitNumber(), sitNumber))
                 .findFirst().map(it -> it.getRole().isBlack() ? 1 : 0).orElse(0);
     }
