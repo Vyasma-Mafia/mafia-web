@@ -225,7 +225,7 @@ public class StatisticsService {
     }
 
     public List<SimpleStatisticDto> getSimpleStatistic() {
-        List<GameInfo> gameInfos = gameInfoRepository.findAll(Sort.by(Sort.Direction.DESC, "game_id"));
+        List<GameInfo> gameInfos = gameInfoRepository.findAllByOrderByMonitoringInfoUpdatedAtDesc();
         return gameInfos.stream()
                 .map(it -> SimpleStatisticDto.builder()
                         .gameDate(it.getGame().getMonitoringInfo().getUpdatedAt())
