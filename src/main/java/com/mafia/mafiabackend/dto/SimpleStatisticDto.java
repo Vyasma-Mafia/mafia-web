@@ -13,6 +13,7 @@ public class SimpleStatisticDto {
     private Instant gameDate;
     private long gameId;
     private String playerName;
+    private int sitNumber;
     private Boolean isRed;
     private Boolean isRedWin;
     private int bestTurn;

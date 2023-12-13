@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CsvResultController {
     private final StatisticsService statisticsService;
 
-    //    gameDate,gameId,playerName,redWin,isRed,bestTurn
+    //    gameDate,gameId,playerName,sitNumber,redWin,isRed,bestTurn
     @GetMapping(value = "/results/csv", produces = "text/csv")
     public void leastGamesSimpleResultsAsCsv(HttpServletResponse response) {
         List<SimpleStatisticDto> statistics = statisticsService.getSimpleStatistic();
@@ -31,6 +31,7 @@ public class CsvResultController {
                         statistic.getGameDate(),
                         statistic.getGameId(),
                         statistic.getPlayerName(),
+                        statistic.getSitNumber(),
                         statistic.getIsRedWin(),
                         statistic.getIsRed(),
                         statistic.getBestTurn()

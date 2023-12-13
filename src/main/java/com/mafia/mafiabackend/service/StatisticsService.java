@@ -220,24 +220,35 @@ public class StatisticsService {
                 .sorted(Comparator.comparing(x ->
                         ((GameRatingDtoResponse) x).getRating())
                         .reversed())
-                .limit(10)
+                .limit(25)
                 .collect(Collectors.toList());
     }
 
     public List<SimpleStatisticDto> getSimpleStatistic() {
         List<GameInfo> gameInfos = gameInfoRepository.findAllByOrderByMonitoringInfoUpdatedAtDesc();
         return gameInfos.stream()
-                .map(it -> SimpleStatisticDto.builder()
-                        .gameDate(it.getGame().getMonitoringInfo().getUpdatedAt())
-                        .gameId(it.getGameId())
-                        .playerName(it.getPlayer().getName())
-                        .isRed(!it.getRole().isBlack())
-                        .isRedWin(it.getGame().getRedWin())
-                        .bestTurn(countBestTurn(it.getGame(), it.getSitNumber()))
-                        .build()
-                )
+                .map(this::buildSimpleStatisticDto)
                 .limit(1000)
                 .toList();
+    }
+
+    public List<SimpleStatisticDto> getSimpleStatisticForGame(long gameId) {
+        List<GameInfo> gameInfos = gameInfoRepository.findAllByGameId(gameId);
+        return gameInfos.stream()
+                .map(this::buildSimpleStatisticDto)
+                .toList();
+    }
+
+    private SimpleStatisticDto buildSimpleStatisticDto(GameInfo it) {
+        return SimpleStatisticDto.builder()
+                .gameDate(it.getGame().getMonitoringInfo().getUpdatedAt())
+                .gameId(it.getGameId())
+                .playerName(it.getPlayer().getName())
+                .sitNumber(it.getSitNumber())
+                .isRed(!it.getRole().isBlack())
+                .isRedWin(it.getGame().getRedWin())
+                .bestTurn(countBestTurn(it.getGame(), it.getSitNumber()))
+                .build();
     }
 
     private int countBestTurn(Game game, int sitNumber) {

@@ -26,6 +26,7 @@ public class GameService {
     private final PlayerRepository playerRepository;
     private final ConversionService conversionService;
     private final StatisticsService statisticsService;
+    private final GoogleSheetsService googleSheetsService;
 
     public GameInfoDtoResponse getGameInfosByGameId(Long id) {
         List<GameInfo> gameInfos = gameInfoRepository.findAllByGameId(id).stream()
@@ -153,6 +154,7 @@ public class GameService {
         }
         gameRepository.save(game);
         statisticsService.updateCommonStatistics(game.getRedWin() ? Role.RED : Role.BLACK);
+        googleSheetsService.sendResultStatToGoogleSheet(statisticsService.getSimpleStatisticForGame(game.getId()));
         log.info("Game with id: " + gameFinishDtoRequest.getId() + " has been finished");
         return HttpStatus.OK;
     }
