@@ -21,7 +21,6 @@ import com.mafia.mafiabackend.repository.CommonStatisticsRepository;
 import com.mafia.mafiabackend.repository.GameInfoRepository;
 import com.mafia.mafiabackend.repository.PlayerRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -49,7 +48,7 @@ public class StatisticsService {
         }
         List<Game> games = gameInfos.stream()
                 .map(GameInfo::getGame)
-                .collect(Collectors.toList());
+                .toList();
 
         List<GameDtoResponse> gameDtoResponses = new ArrayList<>();
         games.forEach(game -> gameDtoResponses.add(GameDtoResponse.builder()
@@ -126,7 +125,7 @@ public class StatisticsService {
     public ResponseEntity<CommonWinsDtoResponse> getCommonStatist(){
         List<CommonStatistic> commonStatisticList = commonStatisticsRepository.findAll();
         CommonStatistic commonStatistic;
-        if (commonStatisticList.size() != 0){
+        if (!commonStatisticList.isEmpty()) {
             commonStatistic = commonStatisticList.get(0);
         }
         else {
@@ -225,7 +224,7 @@ public class StatisticsService {
     }
 
     public List<SimpleStatisticDto> getSimpleStatistic() {
-        List<GameInfo> gameInfos = gameInfoRepository.findAllByOrderByMonitoringInfoUpdatedAtDesc();
+        List<GameInfo> gameInfos = gameInfoRepository.findAllByOrderByMonitoringInfoUpdatedAtDescSitNumberAsc();
         return gameInfos.stream()
                 .map(this::buildSimpleStatisticDto)
                 .limit(1000)
@@ -233,7 +232,7 @@ public class StatisticsService {
     }
 
     public List<SimpleStatisticDto> getSimpleStatisticForGame(long gameId) {
-        List<GameInfo> gameInfos = gameInfoRepository.findAllByGameId(gameId);
+        List<GameInfo> gameInfos = gameInfoRepository.findAllByGameIdOrderBySitNumber(gameId);
         return gameInfos.stream()
                 .map(this::buildSimpleStatisticDto)
                 .toList();
