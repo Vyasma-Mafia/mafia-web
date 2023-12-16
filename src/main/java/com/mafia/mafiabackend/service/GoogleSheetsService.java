@@ -12,6 +12,7 @@ import java.time.format.FormatStyle;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -33,6 +34,7 @@ import com.google.api.services.sheets.v4.model.ValueRange;
 import com.mafia.mafiabackend.dto.SimpleStatisticDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -55,10 +57,21 @@ public class GoogleSheetsService {
 
     private final Sheets service;
 
+    @Value("${api.google}")
+    private String apiGoogleProperty;
+
     public GoogleSheetsService() throws GeneralSecurityException, IOException {
+        if (checkDisabled()) {
+            service = null;
+            return;
+        }
         service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+    }
+
+    private boolean checkDisabled() {
+        return Objects.equals(apiGoogleProperty, "disable");
     }
 
     /**
@@ -89,6 +102,9 @@ public class GoogleSheetsService {
     }
 
     public void sendResultStatToGoogleSheet(List<SimpleStatisticDto> simpleStatistic) {
+        if (checkDisabled()) {
+            return;
+        }
         InsertDimensionRequest insertDimensionRequest = new InsertDimensionRequest()
                 .setRange(new DimensionRange().setDimension("ROWS")
                         .setStartIndex(0)
