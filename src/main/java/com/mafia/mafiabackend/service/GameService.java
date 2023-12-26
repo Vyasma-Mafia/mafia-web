@@ -1,7 +1,28 @@
 package com.mafia.mafiabackend.service;
 
-import com.mafia.mafiabackend.dto.*;
-import com.mafia.mafiabackend.model.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import com.mafia.mafiabackend.dto.ActiveGamesDtoResponse;
+import com.mafia.mafiabackend.dto.GameDtoRequest;
+import com.mafia.mafiabackend.dto.GameFinishDtoRequest;
+import com.mafia.mafiabackend.dto.GameInfoDto;
+import com.mafia.mafiabackend.dto.GameInfoDtoResponse;
+import com.mafia.mafiabackend.dto.NonActiveGameDtoResponse;
+import com.mafia.mafiabackend.model.Game;
+import com.mafia.mafiabackend.model.GameInfo;
+import com.mafia.mafiabackend.model.GameResult;
+import com.mafia.mafiabackend.model.GameType;
+import com.mafia.mafiabackend.model.MonitoringInfo;
+import com.mafia.mafiabackend.model.Player;
+import com.mafia.mafiabackend.model.Role;
 import com.mafia.mafiabackend.repository.GameInfoRepository;
 import com.mafia.mafiabackend.repository.GameRepository;
 import com.mafia.mafiabackend.repository.PlayerRepository;
@@ -10,11 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -90,14 +106,19 @@ public class GameService {
         return numberOfAliveBlackPlayers >= numberOfAliveRedPlayers;
     }
 
+    private static List<String> getGamePlayerNames(Game game) {
+        return game.getGameInfos().stream()
+                .sorted(Comparator.comparingInt(GameInfo::getSitNumber))
+                .map(GameInfo::getPlayer)
+                .map(Player::getName)
+                .collect(Collectors.toList());
+    }
+
     public List<ActiveGamesDtoResponse> getActiveGames() {
         return gameRepository.findAllByGameFinishedFalse().stream()
                 .map(game -> ActiveGamesDtoResponse.builder()
                         .gameId(game.getId())
-                        .playerNames(game.getGameInfos().stream()
-                                .map(GameInfo::getPlayer)
-                                .map(Player::getName)
-                                .collect(Collectors.toList()))
+                        .playerNames(getGamePlayerNames(game))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -108,10 +129,7 @@ public class GameService {
                 .limit(10)
                 .map(game -> NonActiveGameDtoResponse.builder()
                         .gameId(game.getId())
-                        .playerNames(game.getGameInfos().stream()
-                                .map(GameInfo::getPlayer)
-                                .map(Player::getName)
-                                .collect(Collectors.toList()))
+                        .playerNames(getGamePlayerNames(game))
                         .winByRed(game.getRedWin())
                         .build())
                 .collect(Collectors.toList());
