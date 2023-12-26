@@ -138,7 +138,7 @@ public class GameService {
     public HttpStatus finishGame(GameFinishDtoRequest gameFinishDtoRequest) {
         Optional<Game> optionalGame = gameRepository.findById(gameFinishDtoRequest.getId());
 
-        if (!optionalGame.isPresent()) {
+        if (optionalGame.isEmpty()) {
             return HttpStatus.NOT_FOUND;
         }
         Game game = optionalGame.get();
