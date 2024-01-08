@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
@@ -17,20 +18,33 @@ import com.mafia.mafiabackend.model.Game;
 import com.mafia.mafiabackend.model.GameInfo;
 import com.mafia.mafiabackend.model.Player;
 import com.mafia.mafiabackend.model.Role;
+import com.mafia.mafiabackend.model.Season;
 import com.mafia.mafiabackend.repository.CommonStatisticsRepository;
 import com.mafia.mafiabackend.repository.GameInfoRepository;
 import com.mafia.mafiabackend.repository.PlayerRepository;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
-@AllArgsConstructor
 public class StatisticsService {
     private final PlayerRepository playerRepository;
     private final GameInfoRepository gameInfoRepository;
     private final CommonStatisticsRepository commonStatisticsRepository;
+    private final Season defaultSeason;
+
+    public StatisticsService(
+            PlayerRepository playerRepository,
+            GameInfoRepository gameInfoRepository,
+            CommonStatisticsRepository commonStatisticsRepository,
+            @Value("${season.default}") Season defaultSeason
+    ) {
+        this.playerRepository = playerRepository;
+        this.gameInfoRepository = gameInfoRepository;
+        this.commonStatisticsRepository = commonStatisticsRepository;
+        this.defaultSeason = defaultSeason;
+    }
 
     public StatisticsDtoResponse getStatisticsByPlayerId(Long id) {
         Player player = playerRepository.findById(id).orElse(null);
@@ -79,7 +93,7 @@ public class StatisticsService {
                 .build();
     }
 
-    public void updateCommonStatisticWithPastGames(){
+    public void updateCommonStatisticWithPastGames() {
         List<GameInfo> gameInfos = gameInfoRepository.findAll();
         int totalRedWins = (int) gameInfos.stream()
                 .map(GameInfo::getGame)
@@ -122,13 +136,12 @@ public class StatisticsService {
         }
     }
 
-    public ResponseEntity<CommonWinsDtoResponse> getCommonStatist(){
+    public ResponseEntity<CommonWinsDtoResponse> getCommonStatist() {
         List<CommonStatistic> commonStatisticList = commonStatisticsRepository.findAll();
         CommonStatistic commonStatistic;
         if (!commonStatisticList.isEmpty()) {
             commonStatistic = commonStatisticList.get(0);
-        }
-        else {
+        } else {
             return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
         }
 
@@ -168,7 +181,7 @@ public class StatisticsService {
                 .filter(gameInfo -> gameInfo.getGame().getGameFinished())
                 .filter(gameInfo -> gameInfo.getRole().equals(role))
                 .filter(gameInfo -> (gameInfo.getGame().getRedWin() && !Role.isBlack(role))
-                        || (!gameInfo.getGame().getRedWin() && Role.isBlack(role)))
+                                    || (!gameInfo.getGame().getRedWin() && Role.isBlack(role)))
                 .count();
     }
 
@@ -198,11 +211,12 @@ public class StatisticsService {
                 .count();
     }
 
-    public List<GameRatingDtoResponse> getPlayersRating() {
+    public List<GameRatingDtoResponse> getPlayersRating(Optional<Season> season) {
         return playerRepository.findAll().stream()
                 .map(player -> {
                     List<GameInfo> gameInfos = player.getGameInfos().stream()
                             .filter(gameInfo -> gameInfo.getGame().getGameFinished())
+                            .filter(gameInfo -> gameInfo.getGame().getSeason() == season.orElse(defaultSeason))
                             .collect(Collectors.toList());
                     if (gameInfos.size() < 2) {
                         return null;
@@ -217,9 +231,9 @@ public class StatisticsService {
                 })
                 .filter(Objects::nonNull)
                 .sorted(Comparator.comparing(x ->
-                        ((GameRatingDtoResponse) x).getRating())
+                                ((GameRatingDtoResponse) x).getRating())
                         .reversed())
-                .limit(25)
+                .limit(100)
                 .collect(Collectors.toList());
     }
 
@@ -251,13 +265,13 @@ public class StatisticsService {
     }
 
     private int countBestTurn(Game game, int sitNumber) {
-        if (game.getBestTurnFrom() == null || game.getBestTurnFrom() != sitNumber) {
+        if (game.getBestTurn() == null || game.getBestTurn().getBestTurnFrom() != sitNumber) {
             return 0;
         }
         var res = 0;
-        res += checkOnBlack(game, game.getBestTurn1());
-        res += checkOnBlack(game, game.getBestTurn2());
-        res += checkOnBlack(game, game.getBestTurn3());
+        res += checkOnBlack(game, game.getBestTurn().getBestTurn1());
+        res += checkOnBlack(game, game.getBestTurn().getBestTurn2());
+        res += checkOnBlack(game, game.getBestTurn().getBestTurn3());
         return res;
 
 

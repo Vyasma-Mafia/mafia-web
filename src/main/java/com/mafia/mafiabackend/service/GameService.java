@@ -16,6 +16,7 @@ import com.mafia.mafiabackend.dto.GameFinishDtoRequest;
 import com.mafia.mafiabackend.dto.GameInfoDto;
 import com.mafia.mafiabackend.dto.GameInfoDtoResponse;
 import com.mafia.mafiabackend.dto.NonActiveGameDtoResponse;
+import com.mafia.mafiabackend.model.BestTurn;
 import com.mafia.mafiabackend.model.Game;
 import com.mafia.mafiabackend.model.GameInfo;
 import com.mafia.mafiabackend.model.GameResult;
@@ -23,17 +24,17 @@ import com.mafia.mafiabackend.model.GameType;
 import com.mafia.mafiabackend.model.MonitoringInfo;
 import com.mafia.mafiabackend.model.Player;
 import com.mafia.mafiabackend.model.Role;
+import com.mafia.mafiabackend.model.Season;
 import com.mafia.mafiabackend.repository.GameInfoRepository;
 import com.mafia.mafiabackend.repository.GameRepository;
 import com.mafia.mafiabackend.repository.PlayerRepository;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
-@AllArgsConstructor
 @Slf4j
 public class GameService {
 
@@ -43,6 +44,25 @@ public class GameService {
     private final ConversionService conversionService;
     private final StatisticsService statisticsService;
     private final GoogleSheetsService googleSheetsService;
+    private final Season defaultSeason;
+
+    public GameService(
+            GameRepository gameRepository,
+            GameInfoRepository gameInfoRepository,
+            PlayerRepository playerRepository,
+            ConversionService conversionService,
+            StatisticsService statisticsService,
+            GoogleSheetsService googleSheetsService,
+            @Value("${season.default}") Season defaultSeason
+    ) {
+        this.gameRepository = gameRepository;
+        this.gameInfoRepository = gameInfoRepository;
+        this.playerRepository = playerRepository;
+        this.conversionService = conversionService;
+        this.statisticsService = statisticsService;
+        this.googleSheetsService = googleSheetsService;
+        this.defaultSeason = defaultSeason;
+    }
 
     public GameInfoDtoResponse getGameInfosByGameId(Long id) {
         List<GameInfo> gameInfos = gameInfoRepository.findAllByGameId(id).stream()
@@ -156,18 +176,20 @@ public class GameService {
         game.setRedWin(gameFinishDtoRequest.getResult() == GameResult.RED_WIN);
         game.setGameFinished(true);
         game.getMonitoringInfo().setUpdatedAt(Instant.now());
-        var bestTurn = gameFinishDtoRequest.getBestTurn();
-        if (bestTurn != null) {
-            game.setBestTurnFrom(bestTurn.getFrom());
-            if (!bestTurn.getTo().isEmpty()) {
-                game.setBestTurn1(bestTurn.getTo().get(0));
+        var bestTurnDto = gameFinishDtoRequest.getBestTurn();
+        if (bestTurnDto != null) {
+            var bestTurnBuilder = BestTurn.builder()
+                    .bestTurnFrom(bestTurnDto.getFrom());
+            if (!bestTurnDto.getTo().isEmpty()) {
+                bestTurnBuilder.bestTurn1(bestTurnDto.getTo().get(0));
             }
-            if (bestTurn.getTo().size() >= 2) {
-                game.setBestTurn2(bestTurn.getTo().get(1));
+            if (bestTurnDto.getTo().size() >= 2) {
+                bestTurnBuilder.bestTurn2(bestTurnDto.getTo().get(1));
             }
-            if (bestTurn.getTo().size() >= 3) {
-                game.setBestTurn3(bestTurn.getTo().get(2));
+            if (bestTurnDto.getTo().size() >= 3) {
+                bestTurnBuilder.bestTurn3(bestTurnDto.getTo().get(2));
             }
+            game.setBestTurn(bestTurnBuilder.build());
 
         }
         gameRepository.save(game);
@@ -183,6 +205,7 @@ public class GameService {
                 .numberOfPlayers(gameDtoRequest.getPlayersIds().size())
                 .gameFinished(false)
                 .gameStarted(false)
+                .season(gameDtoRequest.getSeason() == null ? defaultSeason : gameDtoRequest.getSeason())
                 .monitoringInfo(MonitoringInfo.builder()
                         .createdAt(Instant.now())
                         .updatedAt(Instant.now())
@@ -191,8 +214,10 @@ public class GameService {
 
         gameRepository.save(game);
 
-        Map<Long, Role> playerIdToRole = randomizeRoles(gameDtoRequest.getGameType(),
-                new ArrayList<>(gameDtoRequest.getPlayersIds()));
+        Map<Long, Role> playerIdToRole = randomizeRoles(
+                gameDtoRequest.getGameType(),
+                new ArrayList<>(gameDtoRequest.getPlayersIds())
+        );
 
 
         List<GameInfo> gameInfos = new ArrayList<>();
@@ -307,9 +332,9 @@ public class GameService {
     public boolean validateRoles(Game game) {
         if (game.getGameType() == GameType.CLASSIC && game.getGameInfos().size() == 10) {
             return checkRoleInGame(game, Role.BLACK, 2)
-                    && checkRoleInGame(game, Role.DON, 1)
-                    && checkRoleInGame(game, Role.SHERIFF, 1)
-                    && checkRoleInGame(game, Role.RED, 6);
+                   && checkRoleInGame(game, Role.DON, 1)
+                   && checkRoleInGame(game, Role.SHERIFF, 1)
+                   && checkRoleInGame(game, Role.RED, 6);
         }
         return true;
     }

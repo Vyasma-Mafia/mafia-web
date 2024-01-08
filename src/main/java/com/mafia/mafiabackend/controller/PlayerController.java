@@ -1,6 +1,17 @@
 package com.mafia.mafiabackend.controller;
 
-import com.mafia.mafiabackend.dto.*;
+import java.util.List;
+import java.util.Optional;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
+import com.mafia.mafiabackend.dto.CommonWinsDtoResponse;
+import com.mafia.mafiabackend.dto.GameRatingDtoResponse;
+import com.mafia.mafiabackend.dto.PlayerDtoRequest;
+import com.mafia.mafiabackend.dto.PlayerDtoResponse;
+import com.mafia.mafiabackend.dto.StatisticsDtoResponse;
+import com.mafia.mafiabackend.model.Season;
 import com.mafia.mafiabackend.service.PlayerService;
 import com.mafia.mafiabackend.service.StatisticsService;
 import com.mafia.mafiabackend.validation.PlayerExists;
@@ -8,11 +19,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
@@ -34,13 +47,14 @@ public class PlayerController {
     }
 
     @Operation(
-            summary = "Рейтинг по последним 10 игрокам"
+            summary = "Рейтинг по последним 100 игрокам"
     )
     @GetMapping("/player/rating")
-    public List<GameRatingDtoResponse> getPlayersRating() {
-        return statisticsService.getPlayersRating();
+    public List<GameRatingDtoResponse> getPlayersRating(
+            @RequestParam(value = "season", required = false) Season season
+    ) {
+        return statisticsService.getPlayersRating(Optional.ofNullable(season));
     }
-
 
     @Operation(
             summary = "Соотношение процента побед за красных и чёрных"

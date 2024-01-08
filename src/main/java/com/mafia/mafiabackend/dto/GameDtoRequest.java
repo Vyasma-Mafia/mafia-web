@@ -1,13 +1,15 @@
 package com.mafia.mafiabackend.dto;
 
-import com.mafia.mafiabackend.model.GameType;
-import com.mafia.mafiabackend.validation.PlayerExists;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.List;
+
+import com.mafia.mafiabackend.model.GameType;
+import com.mafia.mafiabackend.model.Season;
+import com.mafia.mafiabackend.validation.PlayerExists;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
 
 @Schema(description = "Сущность, передаваемая в качестве запроса при создании игры")
 @Data
@@ -20,4 +22,7 @@ public class GameDtoRequest {
     @NotNull
     @Size(min = 8, max = 18)
     private List<@PlayerExists Long> playersIds;
+
+    @Schema(description = "В каком сезоне прошла игра. Сейчас есть AUTUMN23 и SPRING24", example = "AUTUMN23")
+    private Season season;
 }
