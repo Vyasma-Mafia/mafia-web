@@ -24,7 +24,6 @@ import com.mafia.mafiabackend.model.GameType;
 import com.mafia.mafiabackend.model.MonitoringInfo;
 import com.mafia.mafiabackend.model.Player;
 import com.mafia.mafiabackend.model.Role;
-import com.mafia.mafiabackend.model.Season;
 import com.mafia.mafiabackend.repository.GameInfoRepository;
 import com.mafia.mafiabackend.repository.GameRepository;
 import com.mafia.mafiabackend.repository.PlayerRepository;
@@ -44,7 +43,7 @@ public class GameService {
     private final ConversionService conversionService;
     private final StatisticsService statisticsService;
     private final GoogleSheetsService googleSheetsService;
-    private final Season defaultSeason;
+    private final String defaultSeason;
 
     public GameService(
             GameRepository gameRepository,
@@ -53,7 +52,7 @@ public class GameService {
             ConversionService conversionService,
             StatisticsService statisticsService,
             GoogleSheetsService googleSheetsService,
-            @Value("${season.default}") Season defaultSeason
+            @Value("${season.default}") String defaultSeason
     ) {
         this.gameRepository = gameRepository;
         this.gameInfoRepository = gameInfoRepository;

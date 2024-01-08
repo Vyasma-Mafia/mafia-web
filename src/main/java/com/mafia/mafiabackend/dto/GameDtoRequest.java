@@ -6,7 +6,6 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import com.mafia.mafiabackend.model.GameType;
-import com.mafia.mafiabackend.model.Season;
 import com.mafia.mafiabackend.validation.PlayerExists;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -23,6 +22,6 @@ public class GameDtoRequest {
     @Size(min = 8, max = 18)
     private List<@PlayerExists Long> playersIds;
 
-    @Schema(description = "В каком сезоне прошла игра. Сейчас есть AUTUMN23 и SPRING24", example = "AUTUMN23")
-    private Season season;
+    @Schema(description = "В каком сезоне прошла игра", example = "AUTUMN_23")
+    private String season;
 }

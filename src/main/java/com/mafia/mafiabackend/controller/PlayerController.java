@@ -11,7 +11,6 @@ import com.mafia.mafiabackend.dto.GameRatingDtoResponse;
 import com.mafia.mafiabackend.dto.PlayerDtoRequest;
 import com.mafia.mafiabackend.dto.PlayerDtoResponse;
 import com.mafia.mafiabackend.dto.StatisticsDtoResponse;
-import com.mafia.mafiabackend.model.Season;
 import com.mafia.mafiabackend.service.PlayerService;
 import com.mafia.mafiabackend.service.StatisticsService;
 import com.mafia.mafiabackend.validation.PlayerExists;
@@ -51,7 +50,7 @@ public class PlayerController {
     )
     @GetMapping("/player/rating")
     public List<GameRatingDtoResponse> getPlayersRating(
-            @RequestParam(value = "season", required = false) Season season
+            @RequestParam(value = "season", required = false) String season
     ) {
         return statisticsService.getPlayersRating(Optional.ofNullable(season));
     }

@@ -55,5 +55,5 @@ public class Game {
     @Embedded
     private MonitoringInfo monitoringInfo;
 
-    private Season season;
+    private String season;
 }

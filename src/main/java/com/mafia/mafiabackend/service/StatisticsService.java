@@ -18,7 +18,6 @@ import com.mafia.mafiabackend.model.Game;
 import com.mafia.mafiabackend.model.GameInfo;
 import com.mafia.mafiabackend.model.Player;
 import com.mafia.mafiabackend.model.Role;
-import com.mafia.mafiabackend.model.Season;
 import com.mafia.mafiabackend.repository.CommonStatisticsRepository;
 import com.mafia.mafiabackend.repository.GameInfoRepository;
 import com.mafia.mafiabackend.repository.PlayerRepository;
@@ -32,13 +31,13 @@ public class StatisticsService {
     private final PlayerRepository playerRepository;
     private final GameInfoRepository gameInfoRepository;
     private final CommonStatisticsRepository commonStatisticsRepository;
-    private final Season defaultSeason;
+    private final String defaultSeason;
 
     public StatisticsService(
             PlayerRepository playerRepository,
             GameInfoRepository gameInfoRepository,
             CommonStatisticsRepository commonStatisticsRepository,
-            @Value("${season.default}") Season defaultSeason
+            @Value("${season.default}") String defaultSeason
     ) {
         this.playerRepository = playerRepository;
         this.gameInfoRepository = gameInfoRepository;
@@ -211,12 +210,13 @@ public class StatisticsService {
                 .count();
     }
 
-    public List<GameRatingDtoResponse> getPlayersRating(Optional<Season> season) {
+    public List<GameRatingDtoResponse> getPlayersRating(Optional<String> season) {
         return playerRepository.findAll().stream()
                 .map(player -> {
                     List<GameInfo> gameInfos = player.getGameInfos().stream()
                             .filter(gameInfo -> gameInfo.getGame().getGameFinished())
-                            .filter(gameInfo -> gameInfo.getGame().getSeason() == season.orElse(defaultSeason))
+                            .filter(gameInfo -> Objects.equals(
+                                    gameInfo.getGame().getSeason(), season.orElse(defaultSeason)))
                             .collect(Collectors.toList());
                     if (gameInfos.size() < 2) {
                         return null;
