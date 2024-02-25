@@ -27,4 +27,12 @@ public class AdminController {
     ) {
         return adminService.mergePlayers(fromId, toId);
     }
+
+    @Operation(
+            summary = "Добавляет статистику всех игр в гугл-таблицу"
+    )
+    @PostMapping("/results/google/_send")
+    public void sendStatic() {
+        adminService.sendAllStatisticInGoogleSheet();
+    }
 }

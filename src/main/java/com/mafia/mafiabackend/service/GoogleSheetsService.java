@@ -12,7 +12,6 @@ import java.time.format.FormatStyle;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -57,10 +56,12 @@ public class GoogleSheetsService {
 
     private final Sheets service;
 
-    @Value("${api.google}")
-    private String apiGoogleProperty;
+    private final boolean enableGoogleApi;
 
-    public GoogleSheetsService() throws GeneralSecurityException, IOException {
+    public GoogleSheetsService(
+            @Value("${api.google.enable}") boolean enableGoogleApi
+    ) throws GeneralSecurityException, IOException {
+        this.enableGoogleApi = enableGoogleApi;
         if (checkDisabled()) {
             service = null;
             return;
@@ -71,7 +72,7 @@ public class GoogleSheetsService {
     }
 
     private boolean checkDisabled() {
-        return Objects.equals(apiGoogleProperty, "disable");
+        return !enableGoogleApi;
     }
 
     /**
@@ -107,8 +108,8 @@ public class GoogleSheetsService {
         }
         InsertDimensionRequest insertDimensionRequest = new InsertDimensionRequest()
                 .setRange(new DimensionRange().setDimension("ROWS")
-                        .setStartIndex(0)
-                        .setEndIndex(10));
+                        .setStartIndex(1)
+                        .setEndIndex(11));
         var statisticTable = simpleStatistic.stream()
                 .map(it -> List.<Object>of(
                         prettyDate(it.getGameDate()),
@@ -117,17 +118,18 @@ public class GoogleSheetsService {
                         it.getSitNumber(),
                         it.getIsRedWin(),
                         it.getIsRed(),
-                        it.getBestTurn()
+                        it.getBestTurn(),
+                        it.getRole().name()
                 )).toList();
         try {
             service.spreadsheets()
                     .batchUpdate(spreadsheetId, new BatchUpdateSpreadsheetRequest()
                             .setRequests(List.of(new Request().setInsertDimension(insertDimensionRequest))))
                     .execute();
-            //    gameDate,gameId,playerName,redWin,isRed,bestTurn
+            //    gameDate,gameId,playerName,redWin,isRed,bestTurn,role
             service.spreadsheets()
                     .values()
-                    .update(spreadsheetId, "A1:G10", new ValueRange().setValues(statisticTable))
+                    .update(spreadsheetId, "A2:H11", new ValueRange().setValues(statisticTable))
                     .setValueInputOption("USER_ENTERED")
                     .execute();
         } catch (IOException e) {

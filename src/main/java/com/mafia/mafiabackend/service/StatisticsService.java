@@ -261,6 +261,7 @@ public class StatisticsService {
                 .isRed(!it.getRole().isBlack())
                 .isRedWin(it.getGame().getRedWin())
                 .bestTurn(countBestTurn(it.getGame(), it.getSitNumber()))
+                .role(it.getRole())
                 .build();
     }
 

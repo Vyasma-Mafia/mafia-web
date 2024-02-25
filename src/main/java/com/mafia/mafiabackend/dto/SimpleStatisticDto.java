@@ -2,6 +2,7 @@ package com.mafia.mafiabackend.dto;
 
 import java.time.Instant;
 
+import com.mafia.mafiabackend.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,4 +18,5 @@ public class SimpleStatisticDto {
     private Boolean isRed;
     private Boolean isRedWin;
     private int bestTurn;
+    private Role role;
 }
