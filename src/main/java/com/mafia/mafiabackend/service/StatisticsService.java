@@ -235,7 +235,7 @@ public class StatisticsService {
                             .playerName(player.getName())
                             .totalWins(totalWins)
                             .totalGames(totalGames)
-                            .rating(totalWins + bestTurnScores)
+                            .rating((totalWins + bestTurnScores) / totalGames)
                             .build();
                 })
                 .filter(Objects::nonNull)
