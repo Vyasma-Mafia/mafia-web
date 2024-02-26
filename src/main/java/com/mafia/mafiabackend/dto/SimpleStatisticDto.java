@@ -19,4 +19,6 @@ public class SimpleStatisticDto {
     private Boolean isRedWin;
     private int bestTurn;
     private Role role;
+    private String season;
+    private boolean firstKilled;
 }

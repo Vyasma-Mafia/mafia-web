@@ -119,17 +119,19 @@ public class GoogleSheetsService {
                         it.getIsRedWin(),
                         it.getIsRed(),
                         it.getBestTurn(),
-                        it.getRole().name()
+                        it.getRole().name(),
+                        it.getSeason(),
+                        it.isFirstKilled()
                 )).toList();
         try {
             service.spreadsheets()
                     .batchUpdate(spreadsheetId, new BatchUpdateSpreadsheetRequest()
                             .setRequests(List.of(new Request().setInsertDimension(insertDimensionRequest))))
                     .execute();
-            //    gameDate,gameId,playerName,redWin,isRed,bestTurn,role
+            //    gameDate,gameId,playerName,redWin,isRed,bestTurn,role,season,firstKilled
             service.spreadsheets()
                     .values()
-                    .update(spreadsheetId, "A2:H11", new ValueRange().setValues(statisticTable))
+                    .update(spreadsheetId, "A2:J11", new ValueRange().setValues(statisticTable))
                     .setValueInputOption("USER_ENTERED")
                     .execute();
         } catch (IOException e) {

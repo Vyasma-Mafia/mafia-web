@@ -222,11 +222,20 @@ public class StatisticsService {
                         return null;
                     }
                     long totalWins = getWinsByRoleType(true, gameInfos) + getWinsByRoleType(false, gameInfos);
+                    double bestTurnScores = gameInfos.stream()
+                            .filter(it -> !it.getRole().isBlack())
+                            .map(it -> countBestTurn(it.getGame(), it.getSitNumber()))
+                            .mapToDouble(it -> switch (it) {
+                                case 3 -> 1;
+                                case 2 -> 0.5;
+                                default -> 0;
+                            }).sum();
+                    long totalGames = gameInfos.size();
                     return GameRatingDtoResponse.builder()
                             .playerName(player.getName())
                             .totalWins(totalWins)
-                            .totalGames((long) gameInfos.size())
-                            .rating(Math.pow(totalWins, 2) / gameInfos.size())
+                            .totalGames(totalGames)
+                            .rating((double) totalWins / totalGames + bestTurnScores)
                             .build();
                 })
                 .filter(Objects::nonNull)
@@ -262,8 +271,15 @@ public class StatisticsService {
                 .isRedWin(it.getGame().getRedWin())
                 .bestTurn(countBestTurn(it.getGame(), it.getSitNumber()))
                 .role(it.getRole())
+                .season(it.getGame().getSeason())
+                .firstKilled(checkFirstKilled(it.getGame(), it.getSitNumber()))
                 .build();
     }
+
+    private boolean checkFirstKilled(Game game, Integer sitNumber) {
+        return game.getBestTurn() != null && Objects.equals(game.getBestTurn().getBestTurnFrom(), sitNumber);
+    }
+
 
     private int countBestTurn(Game game, int sitNumber) {
         if (game.getBestTurn() == null || game.getBestTurn().getBestTurnFrom() != sitNumber) {
