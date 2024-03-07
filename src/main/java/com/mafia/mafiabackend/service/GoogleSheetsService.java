@@ -48,7 +48,7 @@ public class GoogleSheetsService {
      */
     private static final List<String> SCOPES =
             Collections.singletonList(SheetsScopes.SPREADSHEETS);
-    private static final Path CREDENTIALS_FILE_PATH = Path.of("tokens/keen-shape-408018-b69a07dd9cf0.json");
+    private static final Path CREDENTIALS_FILE_PATH = Path.of("/tokens/keen-shape-408018-b69a07dd9cf0.json");
     final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 
     private final Sheets service;
