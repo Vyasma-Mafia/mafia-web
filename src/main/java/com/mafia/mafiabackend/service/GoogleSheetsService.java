@@ -10,6 +10,7 @@ import java.time.format.FormatStyle;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -38,7 +39,6 @@ public class GoogleSheetsService {
     private final String spreadsheetId = "1AoHIfdopqB3TcALJ5p5NEOOo34MnFYR-70aMWlfEAPs";
     private static final String APPLICATION_NAME = "Google Sheets API for Vyasma Mafia";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -61,7 +61,7 @@ public class GoogleSheetsService {
             service = null;
             return;
         }
-        service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+        service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials())
                 .setApplicationName(APPLICATION_NAME)
                 .build();
     }
@@ -73,15 +73,14 @@ public class GoogleSheetsService {
     /**
      * Creates an authorized Credential object.
      *
-     * @param HTTP_TRANSPORT The network HTTP Transport.
      * @return An authorized Credential object.
      * @throws IOException If the credentials.json file cannot be found.
      */
-    private static HttpCredentialsAdapter getCredentials(final NetHttpTransport HTTP_TRANSPORT)
+    private static HttpCredentialsAdapter getCredentials()
             throws IOException {
         GoogleCredentials googleCredentials;
         try (InputStream inputSteam = GoogleSheetsService.class.getResourceAsStream(CREDENTIALS_FILE_PATH)) {
-            googleCredentials = GoogleCredentials.fromStream(inputSteam).createScoped(SCOPES);
+            googleCredentials = GoogleCredentials.fromStream(Objects.requireNonNull(inputSteam)).createScoped(SCOPES);
         }
         return new HttpCredentialsAdapter(googleCredentials);
     }
