@@ -2,6 +2,8 @@ package com.mafia.mafiabackend.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -46,7 +48,7 @@ public class GoogleSheetsService {
      */
     private static final List<String> SCOPES =
             Collections.singletonList(SheetsScopes.SPREADSHEETS);
-    private static final String CREDENTIALS_FILE_PATH = "/keen-shape-408018-b69a07dd9cf0.json";
+    private static final Path CREDENTIALS_FILE_PATH = Path.of("tokens/keen-shape-408018-b69a07dd9cf0.json");
     final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
 
     private final Sheets service;
@@ -79,7 +81,7 @@ public class GoogleSheetsService {
     private static HttpCredentialsAdapter getCredentials()
             throws IOException {
         GoogleCredentials googleCredentials;
-        try (InputStream inputSteam = GoogleSheetsService.class.getResourceAsStream(CREDENTIALS_FILE_PATH)) {
+        try (InputStream inputSteam = Files.newInputStream(CREDENTIALS_FILE_PATH)) {
             googleCredentials = GoogleCredentials.fromStream(Objects.requireNonNull(inputSteam)).createScoped(SCOPES);
         }
         return new HttpCredentialsAdapter(googleCredentials);
