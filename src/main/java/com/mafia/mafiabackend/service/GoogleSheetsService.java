@@ -100,7 +100,8 @@ public class GoogleSheetsService {
         try {
             service.spreadsheets()
                     .batchUpdate(spreadsheetId, new BatchUpdateSpreadsheetRequest()
-                            .setRequests(List.of(new Request().setDeleteDimension(deleteDimensionRequest))));
+                            .setRequests(List.of(new Request().setDeleteDimension(deleteDimensionRequest))))
+                    .execute();
             service.spreadsheets()
                     .batchUpdate(spreadsheetId, new BatchUpdateSpreadsheetRequest()
                             .setRequests(List.of(
