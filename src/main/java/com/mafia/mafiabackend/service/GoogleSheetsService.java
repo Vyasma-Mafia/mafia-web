@@ -22,7 +22,9 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
 import com.google.api.services.sheets.v4.model.DeleteDimensionRequest;
+import com.google.api.services.sheets.v4.model.DeleteRangeRequest;
 import com.google.api.services.sheets.v4.model.DimensionRange;
+import com.google.api.services.sheets.v4.model.GridRange;
 import com.google.api.services.sheets.v4.model.InsertDimensionRequest;
 import com.google.api.services.sheets.v4.model.Request;
 import com.google.api.services.sheets.v4.model.ValueRange;
@@ -93,12 +95,22 @@ public class GoogleSheetsService {
         }
         DeleteDimensionRequest deleteDimensionRequest = new DeleteDimensionRequest()
                 .setRange(new DimensionRange().setDimension("ROWS")
-                        .setStartIndex(1)
+                        .setStartIndex(2)
                         .setEndIndex(10000));
         try {
             service.spreadsheets()
                     .batchUpdate(spreadsheetId, new BatchUpdateSpreadsheetRequest()
-                            .setRequests(List.of(new Request().setDeleteDimension(deleteDimensionRequest))))
+                            .setRequests(List.of(
+                                            new Request().setDeleteDimension(deleteDimensionRequest),
+                                            new Request().setDeleteRange(new DeleteRangeRequest()
+                                                    .setRange(new GridRange()
+                                                            .setStartRowIndex(1)
+                                                            .setEndRowIndex(1)
+                                                            .setStartColumnIndex(0)
+                                                            .setEndColumnIndex(30)))
+                                    )
+                            )
+                    )
                     .execute();
         } catch (IOException e) {
             logger.error("Error on writing in google table", e);
