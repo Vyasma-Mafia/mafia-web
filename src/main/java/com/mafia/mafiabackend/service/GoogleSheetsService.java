@@ -40,6 +40,14 @@ import org.springframework.stereotype.Service;
 public class GoogleSheetsService {
 
     private static final Logger logger = LoggerFactory.getLogger(GoogleSheetsService.class);
+    public static final InsertDimensionRequest INSERT_DIMENSION_REQUEST = new InsertDimensionRequest()
+            .setRange(new DimensionRange().setDimension("ROWS")
+                    .setStartIndex(1)
+                    .setEndIndex(11));
+    public static final DeleteDimensionRequest DELETE_DIMENSION_REQUEST = new DeleteDimensionRequest()
+            .setRange(new DimensionRange().setDimension("ROWS")
+                    .setStartIndex(2)
+                    .setEndIndex(10000));
     private final String spreadsheetId = "1AoHIfdopqB3TcALJ5p5NEOOo34MnFYR-70aMWlfEAPs";
     private static final String APPLICATION_NAME = "Google Sheets API for Vyasma Mafia";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
@@ -93,14 +101,14 @@ public class GoogleSheetsService {
         if (checkDisabled()) {
             return;
         }
-        DeleteDimensionRequest deleteDimensionRequest = new DeleteDimensionRequest()
-                .setRange(new DimensionRange().setDimension("ROWS")
-                        .setStartIndex(2)
-                        .setEndIndex(10000));
         try {
             service.spreadsheets()
                     .batchUpdate(spreadsheetId, new BatchUpdateSpreadsheetRequest()
-                            .setRequests(List.of(new Request().setDeleteDimension(deleteDimensionRequest))))
+                            .setRequests(List.of(
+                                    new Request().setDeleteDimension(DELETE_DIMENSION_REQUEST),
+                                    new Request().setInsertDimension(INSERT_DIMENSION_REQUEST),
+                                    new Request().setDeleteDimension(DELETE_DIMENSION_REQUEST)
+                            )))
                     .execute();
             service.spreadsheets()
                     .batchUpdate(spreadsheetId, new BatchUpdateSpreadsheetRequest()
@@ -124,10 +132,6 @@ public class GoogleSheetsService {
         if (checkDisabled()) {
             return;
         }
-        InsertDimensionRequest insertDimensionRequest = new InsertDimensionRequest()
-                .setRange(new DimensionRange().setDimension("ROWS")
-                        .setStartIndex(1)
-                        .setEndIndex(11));
         var statisticTable = simpleStatistic.stream()
                 .map(it -> List.<Object>of(
                         prettyDate(it.getGameDate()),
@@ -144,7 +148,7 @@ public class GoogleSheetsService {
         try {
             service.spreadsheets()
                     .batchUpdate(spreadsheetId, new BatchUpdateSpreadsheetRequest()
-                            .setRequests(List.of(new Request().setInsertDimension(insertDimensionRequest))))
+                            .setRequests(List.of(new Request().setInsertDimension(INSERT_DIMENSION_REQUEST))))
                     .execute();
             //    gameDate,gameId,playerName,redWin,isRed,bestTurn,role,season,firstKilled
             service.spreadsheets()
