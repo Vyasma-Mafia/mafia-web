@@ -52,7 +52,7 @@ public class AdminService {
 
     public void sendAllStatisticInGoogleSheet() {
         googleSheetsService.deleteAllPreviousResults();
-        gameRepository.findAllByGameFinishedTrueOrderByGameFinished().forEach(game -> {
+        gameRepository.findAllByGameFinishedTrueOrderByMonitoringInfoUpdatedAt().forEach(game -> {
                     googleSheetsService.sendResultStatToGoogleSheet(
                             statisticsService.getSimpleStatisticForGame(game.getId()));
                     try {

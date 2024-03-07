@@ -10,6 +10,6 @@ public interface GameRepository extends JpaRepository<Game, Long> {
 
     List<Game> findAllByGameFinishedTrue();
 
-    List<Game> findAllByGameFinishedTrueOrderByGameFinished();
+    List<Game> findAllByGameFinishedTrueOrderByMonitoringInfoUpdatedAt();
 }
 
