@@ -51,6 +51,7 @@ public class AdminService {
     }
 
     public void sendAllStatisticInGoogleSheet() {
+        googleSheetsService.deleteAllPreviousResults();
         gameRepository.findAllByGameFinishedTrue().forEach(game -> {
                     googleSheetsService.sendResultStatToGoogleSheet(
                             statisticsService.getSimpleStatisticForGame(game.getId()));
