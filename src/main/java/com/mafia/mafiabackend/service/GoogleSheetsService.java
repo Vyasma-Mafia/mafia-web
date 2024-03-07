@@ -100,8 +100,10 @@ public class GoogleSheetsService {
         try {
             service.spreadsheets()
                     .batchUpdate(spreadsheetId, new BatchUpdateSpreadsheetRequest()
+                            .setRequests(List.of(new Request().setDeleteDimension(deleteDimensionRequest))));
+            service.spreadsheets()
+                    .batchUpdate(spreadsheetId, new BatchUpdateSpreadsheetRequest()
                             .setRequests(List.of(
-                                            new Request().setDeleteDimension(deleteDimensionRequest),
                                             new Request().setDeleteRange(new DeleteRangeRequest()
                                                     .setRange(new GridRange()
                                                             .setStartRowIndex(1)
