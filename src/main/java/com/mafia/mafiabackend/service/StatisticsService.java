@@ -9,8 +9,8 @@ import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
 import com.mafia.mafiabackend.dto.CommonWinsDtoResponse;
-import com.mafia.mafiabackend.dto.GameDtoResponse;
 import com.mafia.mafiabackend.dto.GameRatingDtoResponse;
+import com.mafia.mafiabackend.dto.GameStatisticDtoResponse;
 import com.mafia.mafiabackend.dto.SimpleStatisticDto;
 import com.mafia.mafiabackend.dto.StatisticsDtoResponse;
 import com.mafia.mafiabackend.model.CommonStatistic;
@@ -63,8 +63,8 @@ public class StatisticsService {
                 .map(GameInfo::getGame)
                 .toList();
 
-        List<GameDtoResponse> gameDtoResponses = new ArrayList<>();
-        games.forEach(game -> gameDtoResponses.add(GameDtoResponse.builder()
+        List<GameStatisticDtoResponse> gameStatisticDtoRespons = new ArrayList<>();
+        games.forEach(game -> gameStatisticDtoRespons.add(GameStatisticDtoResponse.builder()
                 .gameFinished(game.getGameFinished())
                 .gameType(game.getGameType())
                 .id(game.getId())
@@ -73,7 +73,7 @@ public class StatisticsService {
 
         return StatisticsDtoResponse.builder()
                 .name(player.getName())
-                .games(gameDtoResponses)
+                .games(gameStatisticDtoRespons)
                 .points(getPointsCount(gameInfos))
                 .winRate(getWinRate(gameInfos))
                 .averageFouls(getAverageFouls(gameInfos))
@@ -191,9 +191,9 @@ public class StatisticsService {
         return Math.round(value * 100);
     }
 
-    private Long getPointsCount(List<GameInfo> gameInfos) {
+    private Double getPointsCount(List<GameInfo> gameInfos) {
         return gameInfos.stream()
-                .mapToLong(GameInfo::getPoints)
+                .mapToDouble(GameInfo::getPoints)
                 .sum();
     }
 
@@ -262,6 +262,7 @@ public class StatisticsService {
     }
 
     private SimpleStatisticDto buildSimpleStatisticDto(GameInfo it) {
+        int bestTurn = countBestTurn(it.getGame(), it.getSitNumber());
         return SimpleStatisticDto.builder()
                 .gameDate(it.getGame().getMonitoringInfo().getUpdatedAt())
                 .gameId(it.getGameId())
@@ -269,11 +270,18 @@ public class StatisticsService {
                 .sitNumber(it.getSitNumber())
                 .isRed(!it.getRole().isBlack())
                 .isRedWin(it.getGame().getRedWin())
-                .bestTurn(countBestTurn(it.getGame(), it.getSitNumber()))
+                .bestTurn(bestTurn)
                 .role(it.getRole())
                 .season(it.getGame().getSeason())
                 .firstKilled(checkFirstKilled(it.getGame(), it.getSitNumber()))
+                .points(it.getPoints())
+                .rating(byGamePlayerRating(it, bestTurn))
                 .build();
+    }
+
+    private double byGamePlayerRating(GameInfo it, int bestTurn) {
+        boolean isWin = it.getRole().isBlack() == it.getGame().getRedWin();
+        return it.getPoints() + (isWin ? 2.5d : 0) + bestTurn * 2.5;
     }
 
     private boolean checkFirstKilled(Game game, Integer sitNumber) {

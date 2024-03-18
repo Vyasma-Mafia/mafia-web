@@ -14,7 +14,7 @@ public class GameInfoDto {
 
     private Role role;
 
-    private Integer points;
+    private Double points;
 
     private Integer sitNumber;
 

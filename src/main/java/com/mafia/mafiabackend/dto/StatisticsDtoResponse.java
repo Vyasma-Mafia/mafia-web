@@ -1,10 +1,10 @@
 package com.mafia.mafiabackend.dto;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 @Builder
@@ -14,10 +14,10 @@ public class StatisticsDtoResponse {
     private String name;
 
     @Schema(description = "Список игр, в которых участвовал игрок")
-    private List<GameDtoResponse> games;
+    private List<GameStatisticDtoResponse> games;
 
     @Schema(description = "Суммарное кол-во очков игрока")
-    private Long points;
+    private Double points;
 
     @Schema(description = "Процент побед игрока")
     private Long winRate;

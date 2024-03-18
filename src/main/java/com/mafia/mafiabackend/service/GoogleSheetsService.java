@@ -150,10 +150,10 @@ public class GoogleSheetsService {
                     .batchUpdate(spreadsheetId, new BatchUpdateSpreadsheetRequest()
                             .setRequests(List.of(new Request().setInsertDimension(INSERT_DIMENSION_REQUEST))))
                     .execute();
-            //    gameDate,gameId,playerName,redWin,isRed,bestTurn,role,season,firstKilled
+            //    gameDate,gameId,playerName,redWin,isRed,bestTurn,role,season,firstKilled,points,rating
             service.spreadsheets()
                     .values()
-                    .update(spreadsheetId, "A2:J11", new ValueRange().setValues(statisticTable))
+                    .update(spreadsheetId, "A2:L11", new ValueRange().setValues(statisticTable))
                     .setValueInputOption("USER_ENTERED")
                     .execute();
         } catch (IOException e) {

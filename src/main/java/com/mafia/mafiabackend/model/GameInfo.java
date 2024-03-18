@@ -49,7 +49,7 @@ public class GameInfo {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    private Integer points;
+    private Double points;
 
     private Integer sitNumber;
 

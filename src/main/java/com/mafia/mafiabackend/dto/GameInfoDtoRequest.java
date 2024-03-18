@@ -1,15 +1,14 @@
 package com.mafia.mafiabackend.dto;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 import com.mafia.mafiabackend.model.Role;
 import com.mafia.mafiabackend.validation.GameExists;
 import com.mafia.mafiabackend.validation.PlayerExists;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import org.springframework.lang.Nullable;
-
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 @Schema(description = "Сущность, передаваемая в качестве запроса при обновлении информации об игроке")
 @Data
@@ -33,7 +32,7 @@ public class GameInfoDtoRequest {
     private Boolean alive;
 
     @Schema(description = "Количество очков", example = "3")
-    private Integer points;
+    private Double points;
 
     @Schema(description = "Роль", example = "3")
     private Role role;

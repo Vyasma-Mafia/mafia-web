@@ -21,4 +21,6 @@ public class SimpleStatisticDto {
     private Role role;
     private String season;
     private boolean firstKilled;
+    private double points;
+    private double rating;
 }

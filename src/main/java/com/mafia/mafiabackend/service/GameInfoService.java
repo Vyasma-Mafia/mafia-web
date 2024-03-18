@@ -1,17 +1,16 @@
 package com.mafia.mafiabackend.service;
 
-import com.mafia.mafiabackend.dto.GameFinishDtoRequest;
-import com.mafia.mafiabackend.dto.GameInfoDtoRequest;
-import com.mafia.mafiabackend.model.Game;
-import com.mafia.mafiabackend.model.GameInfo;
-import com.mafia.mafiabackend.model.GameResult;
-import com.mafia.mafiabackend.model.Role;
-import com.mafia.mafiabackend.repository.GameInfoRepository;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.List;
+
+import com.mafia.mafiabackend.dto.GameInfoDtoRequest;
+import com.mafia.mafiabackend.dto.GamePointsDtoRequest;
+import com.mafia.mafiabackend.model.GameInfo;
+import com.mafia.mafiabackend.model.GameResult;
+import com.mafia.mafiabackend.repository.GameInfoRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
@@ -62,5 +61,17 @@ public class GameInfoService {
 //            return GameResult.RED_WIN;
 //        }
         return GameResult.GAME_IN_PROGRESS;
+    }
+
+    public HttpStatus updateGameInfoPoints(GamePointsDtoRequest request) {
+        List<GameInfo> gameInfos = gameInfoRepository.findAllByGameIdOrderBySitNumber(request.getId());
+        if (gameInfos.size() != request.getPoints().size()) {
+            return HttpStatus.BAD_REQUEST;
+        }
+        for (int i = 0; i < gameInfos.size(); i++) {
+            gameInfos.get(i).setPoints(request.getPoints().get(i));
+        }
+        gameInfoRepository.saveAll(gameInfos);
+        return HttpStatus.OK;
     }
 }

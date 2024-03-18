@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import com.mafia.mafiabackend.dto.ActiveGamesDtoResponse;
 import com.mafia.mafiabackend.dto.GameDtoRequest;
+import com.mafia.mafiabackend.dto.GameDtoResponse;
 import com.mafia.mafiabackend.dto.GameFinishDtoRequest;
 import com.mafia.mafiabackend.dto.GameInfoDto;
 import com.mafia.mafiabackend.dto.GameInfoDtoResponse;
@@ -145,7 +146,7 @@ public class GameService {
     public List<NonActiveGameDtoResponse> getLastTenNonActiveGames() {
         return gameRepository.findAllByGameFinishedTrue().stream()
                 .sorted(Comparator.comparing(x -> ((Game) x).getMonitoringInfo().getUpdatedAt()).reversed())
-                .limit(10)
+//                .limit(10)
                 .map(game -> NonActiveGameDtoResponse.builder()
                         .gameId(game.getId())
                         .playerNames(getGamePlayerNames(game))
@@ -230,7 +231,7 @@ public class GameService {
                     .game(game)
                     .alive(true)
                     .foul(0)
-                    .points(0)
+                    .points(0d)
                     .sitNumber(i + 1)
                     .role(playerIdToRole.get(id))
                     .player(player)
@@ -340,5 +341,20 @@ public class GameService {
 
     private static boolean checkRoleInGame(Game game, Role role, int expectedCount) {
         return game.getGameInfos().stream().filter(it -> it.getRole() == role).count() == expectedCount;
+    }
+
+    public GameDtoResponse getGame(Long gameId) {
+        return gameRepository.findById(gameId)
+                .map(game -> GameDtoResponse.builder()
+                        .id(game.getId())
+                        .gameType(game.getGameType())
+                        .redWin(game.getRedWin())
+                        .gameFinished(game.getGameFinished())
+                        .gameStarted(game.getGameStarted())
+                        .numberOfPlayers(game.getNumberOfPlayers())
+                        .gameInfos(game.getGameInfos().stream().map(GameInfo::getGameId).toList())
+                        .season(game.getSeason())
+                        .build())
+                .orElseThrow();
     }
 }
