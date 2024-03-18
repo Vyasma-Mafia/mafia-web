@@ -285,8 +285,8 @@ public class StatisticsService {
     }
 
     private double byGamePlayerRating(GameInfo it, int bestTurn) {
-        boolean isWin = it.getRole().isBlack() == it.getGame().getRedWin();
-        return it.getPoints() + (isWin ? 2.5d : 0) + bestTurnScoreCalculate(bestTurn) * 2.5;
+        boolean isWin = it.getRole().isBlack() != it.getGame().getRedWin();
+        return it.getPoints() + (isWin ? 2.5d : 0) + bestTurnScoreCalculate(bestTurn) * 2.5d;
     }
 
     private boolean checkFirstKilled(Game game, Integer sitNumber) {
