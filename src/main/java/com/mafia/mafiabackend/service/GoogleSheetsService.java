@@ -143,7 +143,9 @@ public class GoogleSheetsService {
                         it.getBestTurn(),
                         it.getRole().name(),
                         it.getSeason(),
-                        it.isFirstKilled()
+                        it.isFirstKilled(),
+                        it.getPoints(),
+                        it.getRating()
                 )).toList();
         try {
             service.spreadsheets()
