@@ -210,6 +210,14 @@ public class StatisticsService {
                 .count();
     }
 
+    private static double bestTurnScoreCalculate(Integer it) {
+        return switch (it) {
+            case 3 -> 1;
+            case 2 -> 0.5;
+            default -> 0;
+        };
+    }
+
     public List<GameRatingDtoResponse> getPlayersRating(Optional<String> season) {
         return playerRepository.findAll().stream()
                 .map(player -> {
@@ -225,11 +233,8 @@ public class StatisticsService {
                     double bestTurnScores = gameInfos.stream()
                             .filter(it -> !it.getRole().isBlack())
                             .map(it -> countBestTurn(it.getGame(), it.getSitNumber()))
-                            .mapToDouble(it -> switch (it) {
-                                case 3 -> 1;
-                                case 2 -> 0.5;
-                                default -> 0;
-                            }).sum();
+                            .mapToDouble(StatisticsService::bestTurnScoreCalculate)
+                            .sum();
                     long totalGames = gameInfos.size();
                     return GameRatingDtoResponse.builder()
                             .playerName(player.getName())
@@ -281,7 +286,7 @@ public class StatisticsService {
 
     private double byGamePlayerRating(GameInfo it, int bestTurn) {
         boolean isWin = it.getRole().isBlack() == it.getGame().getRedWin();
-        return it.getPoints() + (isWin ? 2.5d : 0) + bestTurn * 2.5;
+        return it.getPoints() + (isWin ? 2.5d : 0) + bestTurnScoreCalculate(bestTurn) * 2.5;
     }
 
     private boolean checkFirstKilled(Game game, Integer sitNumber) {
